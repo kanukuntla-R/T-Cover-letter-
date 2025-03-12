@@ -18,13 +18,14 @@ RED = (255, 0, 0)
 hex_radius = 150
 hex_center = (WIDTH // 2, HEIGHT // 2)
 rotation_angle = 0
+rotation_speed = 2
 
 # Ball parameters
 ball_radius = 10
-g = 0.5  # Gravity
-velocity = 0  # Ball velocity
-ball_angle = 0  # Angle of ball movement
-ball_distance = hex_radius - 10  # Distance from center
+g = 0.2  # Gravity
+velocity = 0  # Ball rolling velocity
+ball_angle = 0  # Angle around the hexagon
+ball_distance = hex_radius - 10  # Ball stays inside the hexagon
 
 clock = pygame.time.Clock()
 running = True
@@ -36,14 +37,13 @@ while running:
             running = False
     
     # Rotate hexagon
-    rotation_angle += 2  # Change rotation speed here
+    rotation_angle += rotation_speed
     
-    # Move the ball inside the hexagon
+    # Simulate ball movement inside the hexagon (rolling effect)
     velocity += g
-    ball_distance -= velocity
-    if ball_distance <= hex_radius - 10:
-        velocity *= -0.8  # Bounce effect
+    ball_angle += velocity  # Ball rolls along the hexagon walls
     
+    # Keep the ball confined within the hexagon
     ball_x = hex_center[0] + ball_distance * math.cos(math.radians(ball_angle))
     ball_y = hex_center[1] + ball_distance * math.sin(math.radians(ball_angle))
     
