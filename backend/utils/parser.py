@@ -1,49 +1,47 @@
 import fitz  # PyMuPDF
 from docx import Document
-import os
 from pathlib import Path
 
-def extract_text(file_path: Path) -> str:
-    """Extract text from a file given its path."""
-    suffix = file_path.suffix.lower()
-    
-    if suffix == ".pdf":
-        doc = fitz.open(file_path)
-        return " ".join(page.get_text() for page in doc)
-        
-    elif suffix in [".docx", ".doc"]:
-        return " ".join(p.text for p in Document(file_path).paragraphs)
-        
-    elif suffix in [".txt", ".md"]:
-        return file_path.read_text(encoding="utf-8", errors="ignore")
-        
-    else:
-        raise ValueError(f"Unsupported file type: {suffix}")
+# ---------------------------------------------------------------------------
+# Text‑extraction helpers
+# ---------------------------------------------------------------------------
 
-def extract_text_from_file(upload_file):
-    """Extract text from an uploaded file object."""
-    filename = upload_file.filename.lower()
-    contents = upload_file.file.read()
-    
-    # Create a temporary file with the correct extension
-    temp_ext = ".txt"
-    if "." in filename:
-        temp_ext = "" + filename[filename.rindex("."):]
-    
-    temp_path = Path(f"temp{temp_ext}")
-    try:
-        # Save the uploaded content to a temporary file
+def extract_text_from_bytes(filename: str, data: bytes) -> str:
+    """Return *plain text* from file **bytes**.
+
+    Supports PDF, DOCX, TXT/MD. Raises ValueError for any other extension.
+    """
+    name = filename.lower()
+
+    # ---- PDF ---------------------------------------------------------------
+    if name.endswith(".pdf"):
+        doc = fitz.open(stream=data, filetype="pdf")
+        return " ".join(page.get_text() for page in doc)
+
+    # ---- DOCX --------------------------------------------------------------
+    if name.endswith(".docx"):
+        # python‑docx needs a temp file on disk
+        temp_path = Path("uploads") / "_upload_tmp.docx"
+        temp_path.parent.mkdir(exist_ok=True)
         with open(temp_path, "wb") as f:
-            f.write(contents)
-        
-        # Use the path-based extract_text function
-        return extract_text(temp_path)
-    except Exception as e:
-        raise ValueError(f"Error processing file: {str(e)}")
-    finally:
-        # Clean up the temporary file
-        if temp_path.exists():
-            try:
-                temp_path.unlink()
-            except:
-                pass  # Ignore cleanup errors
+            f.write(data)
+        try:
+            text = " ".join(p.text for p in Document(temp_path).paragraphs)
+        finally:
+            temp_path.unlink(missing_ok=True)
+        return text
+
+    # ---- TXT/MD ------------------------------------------------------------
+    if name.endswith((".txt", ".md")):
+        return data.decode("utf-8", errors="ignore")
+
+    # -----------------------------------------------------------------------
+    raise ValueError("Unsupported file type; only PDF, DOCX, TXT/MD are allowed.")
+
+# ---------------------------------------------------------------------------
+# Legacy path‑based wrapper (older code may still call this)
+# ---------------------------------------------------------------------------
+
+def extract_text(file_path: Path) -> str:
+    """Back‑compat convenience: read bytes from *file_path* and delegate."""
+    return extract_text_from_bytes(file_path.name, file_path.read_bytes())
