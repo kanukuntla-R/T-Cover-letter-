@@ -1,41 +1,34 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-hot-toast';
 import NavigationButtons from '../components/NavigationButtons';
+import { useEvaluation } from '../context/EvaluationContext';
 
 const EvaluationPage = () => {
-  const [requirements, setRequirements] = useState([]);
-  const [matches, setMatches] = useState({});
+  const { evaluation } = useEvaluation();
+  const navigate = useNavigate();
   const [checkedItems, setCheckedItems] = useState({});
   const [verdict, setVerdict] = useState('Pending');
 
   useEffect(() => {
-    const sampleRequirements = [
-      'Proficiency in Java',
-      'Experience with Spring Framework',
-      'Strong problem-solving skills',
-      'Excellent communication skills',
-      "Bachelor's degree in Computer Science",
-    ];
-    const sampleMatches = {
-      'Proficiency in Java': 'Led debugging for major outages at XYZ Inc.',
-      'Experience with Spring Framework':
-        'Developed and maintained Java-based applications using Spring Framework.',
-      'Strong problem-solving skills': 'Implemented new features and resolved critical issues.',
-      'Excellent communication skills':
-        'Collaborated with cross-functional teams to deliver projects on time and within budget.',
-      "Bachelor's degree in Computer Science":
-        'Bachelor of Science in Computer Science | University of Technology | 2014 - 2018',
-    };
+    if (!evaluation || !evaluation.requirements || !evaluation.matches) {
+      navigate('/');
+      return;
+    }
 
-    setRequirements(sampleRequirements);
-    setMatches(sampleMatches);
-
-    // Initialize all checkboxes as unchecked
     const initialChecked = {};
-    sampleRequirements.forEach((req) => {
+    evaluation.requirements.forEach((req) => {
       initialChecked[req] = false;
     });
     setCheckedItems(initialChecked);
-  }, []);
+  }, [evaluation, navigate]);
+
+  if (!evaluation) {
+    return <div className="p-8 text-center">Loading evaluation data...</div>;
+  }
+
+  const { requirements, matches, applicant_id: applicantId } = evaluation;
+  const metCount = Object.values(checkedItems).filter(Boolean).length;
 
   const handleCheckboxChange = (req) => {
     setCheckedItems((prev) => ({
@@ -44,21 +37,32 @@ const EvaluationPage = () => {
     }));
   };
 
-  const metCount = Object.values(checkedItems).filter(Boolean).length;
+  const submitDecision = async (decision) => {
+    try {
+      const res = await fetch(`/decision/${applicantId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ decision }),
+      });
 
-  const handleAccept = () => {
-    setVerdict('Accepted');
-  };
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.detail || 'Decision update failed');
+      }
 
-  const handleReject = () => {
-    setVerdict('Rejected');
+      setVerdict(decision);
+      toast.success(`Applicant ${decision}`);
+    } catch (error) {
+      console.error('Decision error:', error);
+      toast.error(error.message || 'Failed to submit decision');
+    }
   };
 
   return (
     <div className="p-8 max-w-5xl mx-auto font-sans text-gray-800">
       <header className="mb-8">
-        <h1 className="text-3xl font-bold">Candidate: Alex Johnson</h1>
-        <p className="text-lg text-gray-500">Position: Software Engineer</p>
+        <h1 className="text-3xl font-bold">Candidate Evaluation</h1>
+        <p className="text-lg text-gray-500">Applicant ID: {applicantId}</p>
       </header>
 
       <h2 className="text-xl font-semibold mb-4">Requirements</h2>
@@ -91,7 +95,7 @@ const EvaluationPage = () => {
 
       <div className="mb-6">
         <h3 className="font-semibold text-lg mb-2">Score & Decision</h3>
-        <p className="text-sm text-gray-600 mb-1">{verdict}</p>
+        <p className="text-sm text-gray-600 mb-1">Status: {verdict}</p>
         <div className="relative w-full h-2 bg-gray-200 rounded-full mb-2">
           <div
             className="absolute top-0 left-0 h-full bg-yellow-400 rounded-full transition-all duration-300"
@@ -104,13 +108,13 @@ const EvaluationPage = () => {
 
         <div className="flex gap-3 mt-4">
           <button
-            onClick={handleAccept}
+            onClick={() => submitDecision('Accepted')}
             className="bg-yellow-400 hover:bg-yellow-500 text-black font-semibold py-2 px-4 rounded"
           >
             Accept Applicant
           </button>
           <button
-            onClick={handleReject}
+            onClick={() => submitDecision('Rejected')}
             className="bg-gray-100 hover:bg-gray-200 text-black font-semibold py-2 px-4 rounded"
           >
             Reject
