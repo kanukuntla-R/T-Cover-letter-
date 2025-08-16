@@ -11,12 +11,36 @@
 
 ---
 
-## Tech Stack
+## Architecture
+Our system uses a pipeline and layered architecture:
 
 * **Frontend:** React + Tailwind CSS
 * **Backend:** Python + FastAPI
 * **AI/NLP:** spaCy, HuggingFace, LLMs (e.g., GPT)
 * **Database:** SQLite / PostgreSQL
+
+---
+## Framework Flow
+
+┌────────────────────┐        ┌────────────────────┐        ┌─────────────────────────┐
+│  Recruiter Input   │  ───▶  │   FastAPI Backend  │  ───▶  │   NLP / LLM Processing  │
+│ (Requirements +    │        │  (Upload / Analyze)│        │ (spaCy, Transformers,   │
+│  Cover Letter)     │        └────────────────────┘        │   GPT Models, etc.)     │
+└────────────────────┘                                       └───────────┬─────────────┘
+                                                                        │
+                                                                        ▼
+                                                             ┌────────────────────┐
+                                                             │    JSON Output     │
+                                                             │ (Requirement →     │
+                                                             │  Candidate Match)  │
+                                                             └───────────┬────────┘
+                                                                         │
+                                                                         ▼
+                                                             ┌────────────────────┐
+                                                             │  T-Letter Frontend │
+                                                             │ (React + Tailwind) │
+                                                             └────────────────────┘
+
 
 ---
 
