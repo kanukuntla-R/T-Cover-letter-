@@ -22,24 +22,12 @@ Our system uses a pipeline and layered architecture:
 ---
 ## Framework Flow
 
-┌────────────────────┐        ┌────────────────────┐        ┌─────────────────────────┐
-│  Recruiter Input   │  ───▶  │   FastAPI Backend  │  ───▶  │   NLP / LLM Processing  │
-│ (Requirements +    │        │  (Upload / Analyze)│        │ (spaCy, Transformers,   │
-│  Cover Letter)     │        └────────────────────┘        │   GPT Models, etc.)     │
-└────────────────────┘                                       └───────────┬─────────────┘
-                                                                        │
-                                                                        ▼
-                                                             ┌────────────────────┐
-                                                             │    JSON Output     │
-                                                             │ (Requirement →     │
-                                                             │  Candidate Match)  │
-                                                             └───────────┬────────┘
-                                                                         │
-                                                                         ▼
-                                                             ┌────────────────────┐
-                                                             │  T-Letter Frontend │
-                                                             │ (React + Tailwind) │
-                                                             └────────────────────┘
+flowchart LR
+    A[Recruiter Input<br/>(Requirements + Cover Letter)] --> B[FastAPI Backend<br/>(Upload / Analyze)]
+    B --> C[NLP / LLM Processing<br/>(spaCy, Transformers, GPT Models)]
+    C --> D[JSON Output<br/>(Requirement → Candidate Match)]
+    D --> E[T-Letter Frontend<br/>(React + Tailwind)]
+
 
 
 ---
