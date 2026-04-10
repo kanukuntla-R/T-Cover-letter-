@@ -1,164 +1,236 @@
-# Job Matching Platform
+Here’s a polished `README.md` you can use for this project, based on the app structure and current codebase. 
 
-A full-stack application for matching job applicants with positions using AI-powered analysis.
+````md
+# TalentMatch AI
 
-## 🚀 Quick Start
+TalentMatch AI is a full-stack application that helps recruiters evaluate applicants by comparing cover letter content against job qualifications. It uses AI to extract relevant evidence from uploaded cover letters and present those matches in a reviewer-friendly format.
+
+## Features
+
+- Upload cover letters in PDF, DOCX, or TXT format
+- Extract text from uploaded files
+- Enter required job qualifications
+- Use AI to match qualifications against candidate content
+- Review candidate responses in a structured evaluation interface
+- Navigate between applicants and verify qualification matches
+
+## Tech Stack
+
+### Frontend
+- React
+- React Router
+- Tailwind CSS
+- Heroicons
+
+### Backend
+- FastAPI
+- Python
+- PyMuPDF
+- python-docx
+- OpenAI API
+
+## Project Structure
+
+```bash
+kanukuntla-r-t-cover-letter/
+├── README.md
+└── my-app/
+    ├── package.json
+    ├── backend/
+    │   ├── main.py
+    │   ├── .env.example
+    │   ├── models/
+    │   │   └── schemas.py
+    │   └── utils/
+    │       ├── llm.py
+    │       ├── matcher.py
+    │       └── parser.py
+    ├── public/
+    └── src/
+        ├── components/
+        ├── data/
+        └── pages/
+````
+
+## How It Works
+
+1. A recruiter enters desired qualifications.
+2. A candidate cover letter is uploaded.
+3. The backend extracts text from the file.
+4. The AI model compares the cover letter text to the qualification list.
+5. The app returns matched phrases or sentences for each qualification.
+6. The recruiter reviews and verifies each match in the evaluation UI.
+
+## Getting Started
 
 ### Prerequisites
-- Node.js (v16 or later)
-- Python (3.8 or later)
-- npm or yarn
 
-### Environment Setup
+Make sure you have installed:
 
-1. **Backend Setup**
-   ```bash
-   cd backend
-   
-   # Create and activate virtual environment (recommended)
-   python -m venv venv
-   source venv/bin/activate  # On Windows: .\venv\Scripts\activate
-   
-   # Install dependencies
-   pip install -r requirements.txt
-   
-   # Set up environment variables
-   cp .env.example .env
-   # Open .env and add your API keys
-   ```
+* Node.js 16+
+* npm
+* Python 3.8+
 
-2. **Frontend Setup**
-   ```bash
-   # From project root
-   cd frontend
-   
-   # Install dependencies
-   npm install
-   
-   # Set up environment variables
-   cp .env.example .env
-   # Configure any frontend environment variables
-   ```
+## Installation
 
-## 🔑 Environment Variables
+### 1. Clone the repository
 
-### Backend (`.env` in `/backend`)
-```env
-# Required
-OPENAI_API_KEY=your_openai_api_key_here
-
-# Optional (uncomment and set as needed)
-# PORT=8000
-# DEBUG=True
-# DATABASE_URL=postgresql://user:password@localhost:5432/dbname
+```bash
+git clone <your-repository-url>
+cd kanukuntla-r-t-cover-letter/my-app
 ```
 
-### Frontend (`.env` in `/frontend`)
-```env
-REACT_APP_API_URL=http://localhost:8000  # Update with your backend URL
-```
+### 2. Set up the backend
 
-## 🚨 Important Security Notes
-
-1. **Never commit your `.env` files**
-   - These files contain sensitive information
-   - They are already in `.gitignore`
-
-2. **API Key Security**
-   - Never share your OpenAI API key
-   - Rotate your keys immediately if exposed
-   - Use environment variables for all sensitive data
-
-3. **Before Committing**
-   ```bash
-   git status
-   # Verify no .env files are being tracked
-   ```
-
-## 🛠 Development
-
-### Start Backend
 ```bash
 cd backend
+python -m venv venv
+source venv/bin/activate
+```
+
+On Windows:
+
+```bash
+venv\Scripts\activate
+```
+
+Install backend dependencies:
+
+```bash
+pip install fastapi uvicorn python-docx pymupdf python-multipart python-dotenv openai
+```
+
+Create your environment file:
+
+```bash
+cp .env.example .env
+```
+
+Then add your OpenAI API key to `.env`:
+
+```env
+OPENAI_API_KEY=your_openai_api_key_here
+```
+
+### 3. Set up the frontend
+
+Open a new terminal:
+
+```bash
+cd my-app
+npm install
+```
+
+## Running the App
+
+### Start the backend
+
+From the `backend` folder:
+
+```bash
 uvicorn main:app --reload
 ```
 
-### Start Frontend
+The backend will run at:
+
 ```bash
-cd frontend
+http://localhost:8000
+```
+
+### Start the frontend
+
+From the `my-app` folder:
+
+```bash
 npm start
 ```
 
-## 🤝 Contributing
+The frontend will run at:
 
-1. Create a new branch for your feature
-2. Make your changes
-3. Test thoroughly
-4. Submit a pull request
+```bash
+http://localhost:3000
+```
 
-## 📄 License
+## API Endpoints
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+### `POST /upload`
 
----
+Uploads a cover letter file and extracts its text.
 
-> **Note**: This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+**Accepted file types:**
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+* PDF
+* DOCX
+* TXT
 
-### `npm test`
+**Response:**
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+```json
+{
+  "text": "Extracted cover letter text"
+}
+```
 
-### `npm run build`
+### `POST /analyze`
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+Matches cover letter content against a list of qualifications.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+**Request body:**
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+```json
+{
+  "cover_letter_text": "Candidate cover letter content",
+  "qualifications": [
+    "Leadership",
+    "Python",
+    "Team Collaboration"
+  ]
+}
+```
 
-### `npm run eject`
+**Response:**
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+```json
+{
+  "matches": {
+    "Leadership": "Managed a team of 6 developers for 2 years.",
+    "Python": "Built Python-based data processing tools."
+  }
+}
+```
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+## Environment Variables
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+Create a `.env` file in `backend/`:
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+```env
+OPENAI_API_KEY=your_openai_api_key_here
+```
 
-## Learn More
+## Current Notes
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+* The project currently uses mock applicant data in the evaluation flow.
+* The frontend includes an upload and evaluation interface, but some integration pieces may still need refinement.
+* The backend contains a duplicate `upload_cover_letter` function definition that should be cleaned up.
+* The OpenAI integration in `llm.py` uses an older client style and may need updating depending on the installed OpenAI package version.
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+## Future Improvements
 
-### Code Splitting
+* Connect frontend upload and qualification input directly to backend APIs
+* Store applicants and job postings in a database
+* Add authentication for recruiter accounts
+* Improve scoring and ranking logic
+* Add support for resumes in addition to cover letters
+* Export evaluation reports
+* Add unit and integration tests
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+## Security Notes
 
-### Analyzing the Bundle Size
+* Never commit `.env` files
+* Keep API keys private
+* Rotate keys immediately if exposed
+* Restrict CORS settings before production deployment
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+## License
 
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+This project is licensed under the MIT License.
